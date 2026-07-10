@@ -1,0 +1,7 @@
+apiVersion: v2
+name: raw
+description: A local Helm chart to deploy arbitrary raw Kubernetes resources in platform-observability.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+

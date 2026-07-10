@@ -1,0 +1,14 @@
+releases:
+  - name: monitoring-namespaces-prep
+    namespace: monitoring
+    chart: ../charts/raw
+    values:
+      - resources:
+          - apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: monitoring-boot-checkpoint
+              namespace: monitoring
+            data:
+              status: "Monitoring namespace initialized. Proceeding with Prometheus Operator deployment."
+

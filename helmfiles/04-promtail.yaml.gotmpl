@@ -1,0 +1,66 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - name: promtail
+    namespace: monitoring
+    chart: grafana/promtail
+    version: 6.11.2
+    values:
+      - config:
+          clients:
+            - url: http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
+          
+          # Advanced Log Scraping & Metadata Parsing
+          snippets:
+            common:
+              - action: replace
+                source_labels:
+                  - __meta_kubernetes_pod_label_app_kubernetes_io_name
+                target_label: app
+              - action: replace
+                source_labels:
+                  - __meta_kubernetes_pod_label_app_kubernetes_io_part_of
+                target_label: system
+              - action: replace
+                source_labels:
+                  - __meta_kubernetes_pod_label_sws_io_team
+                target_label: team
+            
+            # JSON parsing & multiline matching pipeline configuration
+            pipelineStages:
+              - cri: {}
+              - json:
+                  expressions:
+                    log: log
+                    stream: stream
+                    time: time
+                    correlationId: correlation_id
+                    traceId: trace_id
+              - multiline:
+                  firstline: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}'
+                  max_wait_time: 3s
+              - labels:
+                  stream:
+                  correlationId:
+                  traceId:
+
+        # Resources limits
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+
+        # Security context configurations
+        containerSecurityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          runAsNonRoot: false # Promtail must run as root (or have system read capabilities) to access /var/log/pods directories
+

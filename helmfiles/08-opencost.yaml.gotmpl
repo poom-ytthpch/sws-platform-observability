@@ -1,0 +1,46 @@
+repositories:
+  - name: opencost
+    url: https://opencost.github.io/opencost-helm-chart
+
+releases:
+  - name: opencost
+    namespace: monitoring
+    chart: opencost/opencost
+    version: 1.1.0
+    values:
+      - opencost:
+          prometheus:
+            internal:
+              enabled: false
+            external:
+              enabled: true
+              url: http://prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        
+        # Scrape metrics configurations
+        serviceMonitor:
+          enabled: {{ exec "sh" (list "-c" "kubectl get crd servicemonitors.monitoring.coreos.com &>/dev/null && echo true || echo false") | trim }}
+          additionalLabels:
+            release: prometheus-stack
+        
+        # Resources parameters
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        
+        # Security constraints
+        podSecurityContext:
+          fsGroup: 1001
+          runAsUser: 1001
+          runAsNonRoot: true
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001

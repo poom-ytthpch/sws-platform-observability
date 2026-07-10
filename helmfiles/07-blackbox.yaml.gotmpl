@@ -1,0 +1,61 @@
+repositories:
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+
+releases:
+  - name: blackbox-exporter
+    namespace: monitoring
+    chart: prometheus-community/prometheus-blackbox-exporter
+    version: 7.11.0
+    values:
+      - config:
+          modules:
+            http_2xx:
+              prober: http
+              timeout: 5s
+              http:
+                valid_status_codes: []
+                method: GET
+                follow_redirects: true
+                fail_if_ssl: false
+                fail_if_not_ssl: false
+            tcp_connect:
+              prober: tcp
+              timeout: 5s
+            dns_query:
+              prober: dns
+              timeout: 5s
+              dns:
+                query_name: kubernetes.default.svc.cluster.local
+                query_type: A
+            icmp:
+              prober: icmp
+              timeout: 5s
+
+        # Deploy ServiceMonitor to scrape probes
+        serviceMonitor:
+          enabled: {{ exec "sh" (list "-c" "kubectl get crd servicemonitors.monitoring.coreos.com &>/dev/null && echo true || echo false") | trim }}
+          defaults:
+            labels:
+              release: prometheus-stack
+            interval: 30s
+            scrapeTimeout: 30s
+
+        # Hardened security configurations
+        # NOTE: fsGroup is intentionally omitted from securityContext because the
+        # prometheus-blackbox-exporter chart template maps .Values.securityContext
+        # directly into the container's securityContext. fsGroup is a pod-level field
+        # only; setting it at container level causes a schema validation error on
+        # Kubernetes v1.34+ (field not declared in schema). The pod-level fsGroup
+        # default from the chart is sufficient.
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001

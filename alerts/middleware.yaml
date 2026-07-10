@@ -1,0 +1,51 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-middleware-rules
+  namespace: monitoring
+  labels:
+    role: alert-rules
+    release: prometheus-stack
+spec:
+  groups:
+    - name: middleware-alerts
+      rules:
+        # Alert when a Postgres primary or replica node goes offline
+        - alert: PostgresqlDown
+          expr: pg_up == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL Database Down on {{ $labels.instance }}"
+            description: "Postgres exporter on node {{ $labels.instance }} reports database connection failure."
+
+        # Alert when a Redis instance is unresponsive
+        - alert: RedisDown
+          expr: redis_up == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Redis Cache Down on {{ $labels.instance }}"
+            description: "Redis instance {{ $labels.instance }} is unreachable."
+
+        # Alert when Kafka brokers drop below expected replication count
+        - alert: KafkaBrokerDown
+          expr: kafka_brokers < 3
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Kafka Broker Offline"
+            description: "Active Kafka brokers count is {{ $value }}, which is below the minimum required HA replica quorum of 3."
+
+        # Alert when RabbitMQ cluster loses partition node
+        - alert: RabbitmqNodeDown
+          expr: rabbitmq_running_nodes < 3
+          for: 5m
+          labels:
+            severity: high
+          annotations:
+            summary: "RabbitMQ Cluster Node Offline"
+            description: "Active RabbitMQ nodes count is {{ $value }} (expected 3 replicas)."

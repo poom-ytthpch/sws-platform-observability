@@ -1,0 +1,27 @@
+repositories:
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+
+releases:
+  - name: prometheus-stack
+    namespace: monitoring
+    chart: prometheus-community/kube-prometheus-stack
+    version: 48.2.0
+    values:
+      - ../environments/default/prometheus-stack.yaml
+      - prometheus:
+          prometheusSpec:
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  resources:
+                    requests:
+                      storage: {{ dig "prometheus" "storageSize" "5Gi" .Values }}
+                  storageClassName: {{ dig "prometheus" "storageClass" "longhorn-replicated" .Values }}
+        alertmanager:
+          alertmanagerSpec:
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: {{ dig "prometheus" "storageClass" "longhorn-replicated" .Values }}
+

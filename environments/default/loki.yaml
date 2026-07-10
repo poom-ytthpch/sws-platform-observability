@@ -1,0 +1,87 @@
+# Production-Ready Grafana Loki Configuration (Simple Scalable Architecture)
+
+# Deploy read and write components for horizontal scaling
+loki:
+  auth_enabled: false
+  
+  # Compaction and retention management
+  compactor:
+    shared_store: s3
+    retention_enabled: true
+    retention_delete_delay: 2h
+    retention_delete_worker_count: 150
+  
+  limits_config:
+    retention_period: 720h # Retain logs for 30 days
+    reject_old_samples: true
+    reject_old_samples_max_age: 168h
+  
+  # MinIO S3 storage backend configuration
+  storage:
+    bucketNames:
+      chunks: loki-chunks
+      ruler: loki-ruler
+      admin: loki-admin
+    type: s3
+    s3:
+      s3: http://minio.platform-system.svc.cluster.local:9000
+      s3forcepathstyle: true
+      access_key_id: admin
+      secret_access_key: secret123
+
+write:
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+read:
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+# Enable gateway (nginx ingress backend router)
+gateway:
+  enabled: true
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Disable self-monitoring and Grafana Agent Operator.
+# We use Promtail for log collection — the Grafana Agent Operator is not required.
+# Keeping selfMonitoring enabled would fail on a clean cluster because it requires
+# monitoring.grafana.com/v1alpha1 CRDs (GrafanaAgent, LogsInstance, PodLogs).
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+  serviceMonitor:
+    metricsInstance:
+      enabled: false
+    # Keep ServiceMonitor enabled for Prometheus Operator scraping
+    enabled: true
+  dashboards:
+    enabled: true
+  rules:
+    enabled: true
+  lokiCanary:
+    enabled: true
+
+# Disable Helm tests (require self-monitoring)
+test:
+  enabled: false
+

@@ -1,0 +1,45 @@
+name: Platform Observability Lint & Validate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Yamllint
+        run: |
+          sudo apt-get update && sudo apt-get install -y yamllint
+
+      - name: Run Yamllint
+        run: |
+          yamllint -c .yamllint.yaml .
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+
+      - name: Set up Helmfile
+        uses: helmfile/setup-helmfile@v4
+        with:
+          version: 'v0.155.0'
+
+      - name: Dry-run Template - Development
+        run: |
+          helmfile -e development template
+
+      - name: Dry-run Template - Staging
+        run: |
+          helmfile -e staging template
+
+      - name: Dry-run Template - Production
+        run: |
+          helmfile -e production template
+

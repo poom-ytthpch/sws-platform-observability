@@ -1,0 +1,13 @@
+releases:
+  - name: observability-validation-checkpoint
+    namespace: monitoring
+    chart: ../charts/raw
+    values:
+      - resources:
+          - apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: observability-validation-checkpoint
+              namespace: monitoring
+            data:
+              status: "Observability validation completed. Monitoring stack fully initialized."

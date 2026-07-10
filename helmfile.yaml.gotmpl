@@ -1,0 +1,114 @@
+environments:
+  default:
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+  development:
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/development/values.yaml
+  staging:
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/staging/values.yaml
+  production:
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/production/values.yaml
+
+helmfiles:
+  - path: helmfiles/00-crds.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/01-prometheus.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/02-grafana.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/03-loki.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/04-promtail.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/05-tempo.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/06-opentelemetry.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/07-blackbox.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/08-opencost.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/09-dashboards.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/10-alerts.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml
+  - path: helmfiles/11-validation.yaml.gotmpl
+    values:
+      - environments/default/prometheus-stack.yaml
+      - environments/default/loki.yaml
+      - environments/default/tempo.yaml
+      - environments/default/otel-collector.yaml
+      - environments/{{ .Environment.Name }}/values.yaml

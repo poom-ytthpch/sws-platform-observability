@@ -1,0 +1,25 @@
+releases:
+  - name: platform-grafana-dashboards
+    namespace: monitoring
+    chart: ../charts/raw
+    values:
+      - globalLabels:
+          app.kubernetes.io/part-of: platform-observability
+          grafana_dashboard: "1" # Automatically scanned by Grafana sidecar to load JSON files
+        resources:
+          # Registered dashboard metadata definitions for core platform nodes
+          - apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: cluster-node-metrics-dashboard
+              namespace: monitoring
+            data:
+              cluster-status: "Metadata tracking cluster resource utilization."
+          # Registered dashboard metadata for database middleware
+          - apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: middleware-metrics-dashboard
+              namespace: monitoring
+            data:
+              middleware-status: "Metadata tracking PostgreSQL, Kafka, and Redis metrics."

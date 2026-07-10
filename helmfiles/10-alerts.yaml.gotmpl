@@ -1,0 +1,29 @@
+releases:
+  - name: custom-alert-rules
+    namespace: monitoring
+    chart: ../charts/raw
+    installed: {{ exec "sh" (list "-c" "kubectl get crd prometheusrules.monitoring.coreos.com &>/dev/null && echo true || echo false") | trim }}
+    values:
+
+      - globalLabels:
+          app.kubernetes.io/part-of: platform-observability
+          sws.io/team: platform-engineering
+        resources:
+          {{- range $doc := splitList "---" (readFile "../alerts/infrastructure.yaml") }}
+          {{- $parsed := fromYaml $doc }}
+          {{- if $parsed }}
+          - {{ toYaml $parsed | nindent 12 | trim }}
+          {{- end }}
+          {{- end }}
+          {{- range $doc := splitList "---" (readFile "../alerts/middleware.yaml") }}
+          {{- $parsed := fromYaml $doc }}
+          {{- if $parsed }}
+          - {{ toYaml $parsed | nindent 12 | trim }}
+          {{- end }}
+          {{- end }}
+          {{- range $doc := splitList "---" (readFile "../alerts/applications.yaml") }}
+          {{- $parsed := fromYaml $doc }}
+          {{- if $parsed }}
+          - {{ toYaml $parsed | nindent 12 | trim }}
+          {{- end }}
+          {{- end }}

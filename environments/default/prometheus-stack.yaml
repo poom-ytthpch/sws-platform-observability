@@ -1,0 +1,106 @@
+# Production-grade kube-prometheus-stack Configuration
+
+# Deploy core prometheus operator CRDs
+prometheusOperator:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Prometheus Server Instance
+prometheus:
+  enabled: true
+  prometheusSpec:
+    replicas: 2
+    retention: 15d
+    retentionSize: 90GB
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    
+    # Storage Configuration
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn-replicated
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+    
+    # Pod Scheduling Hardening
+    podAntiAffinity: "hard"
+    
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 8192Mi
+      requests:
+        cpu: 1000m
+        memory: 2048Mi
+
+# Alertmanager configuration
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    replicas: 2
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn-replicated
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+  
+  # Enterprise alert routing matrix
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname', 'namespace', 'severity']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'slack-notifications'
+      routes:
+        # Route Critical / High directly to PagerDuty
+        - matchers:
+            - severity =~ "critical|high"
+          receiver: 'pagerduty-urgent'
+        # Route warning alerts to Slack
+        - matchers:
+            - severity = "medium"
+          receiver: 'slack-notifications'
+    receivers:
+      - name: 'slack-notifications'
+        slack_configs:
+          - channel: '#platform-alerts'
+            api_url: 'PLACEHOLDER_SLACK_WEBHOOK_URL'
+            send_resolved: true
+      - name: 'pagerduty-urgent'
+        pagerduty_configs:
+          - service_key: 'pagerduty-integration-key-placeholder'
+            send_resolved: true
+
+# Enable standard node exporters and collectors
+nodeExporter:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+
+# Grafana is deployed in a separate Helmfile for clean lifecycle staging
+grafana:
+  enabled: false
+

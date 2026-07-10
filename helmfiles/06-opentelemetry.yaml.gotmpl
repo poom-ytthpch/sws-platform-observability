@@ -1,0 +1,11 @@
+repositories:
+  - name: open-telemetry
+    url: https://open-telemetry.github.io/opentelemetry-helm-charts
+
+releases:
+  - name: otel-collector
+    namespace: monitoring
+    chart: open-telemetry/opentelemetry-collector
+    version: 0.66.0
+    values:
+      - ../environments/default/otel-collector.yaml

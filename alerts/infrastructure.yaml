@@ -1,0 +1,41 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-infrastructure-rules
+  namespace: monitoring
+  labels:
+    role: alert-rules
+    release: prometheus-stack
+spec:
+  groups:
+    - name: host-infrastructure
+      rules:
+        # Alert when a cluster node goes offline
+        - alert: NodeDown
+          expr: up{job="node-exporter"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.instance }} is Down"
+            description: "Node exporter on instance {{ $labels.instance }} has been unreachable for more than 5 minutes."
+        
+        # Alert when disk usage exceeds 90%
+        - alert: DiskSpaceRunningOut
+          expr: (node_filesystem_free_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+          for: 10m
+          labels:
+            severity: high
+          annotations:
+            summary: "Instance {{ $labels.instance }} Low Disk Space"
+            description: "Available disk space on mountpoint '/' has dropped below 10% on node {{ $labels.instance }}."
+
+        # Alert when CPU load is sustained above 90%
+        - alert: HostHighCpuLoad
+          expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+          for: 10m
+          labels:
+            severity: medium
+          annotations:
+            summary: "Instance {{ $labels.instance }} High CPU Utilization"
+            description: "CPU load on node {{ $labels.instance }} has exceeded 90% for over 10 minutes."

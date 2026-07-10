@@ -1,0 +1,71 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - name: grafana
+    namespace: monitoring
+    chart: grafana/grafana
+    version: 6.57.4
+    values:
+      - persistence:
+          enabled: true
+          storageClassName: longhorn-replicated
+          size: 10Gi
+        adminPassword: "secret123"
+        ingress:
+          enabled: true
+          ingressClassName: nginx
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          hosts:
+            - grafana.sws.internal
+          tls:
+            - secretName: grafana-console-tls
+              hosts:
+                - grafana.sws.internal
+        
+        # Provision datasources automatically
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+              - name: Prometheus
+                type: prometheus
+                access: proxy
+                url: http://prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+                isDefault: true
+              - name: Loki
+                type: loki
+                access: proxy
+                url: http://loki-gateway.monitoring.svc.cluster.local
+              - name: Tempo
+                type: tempo
+                access: proxy
+                url: http://tempo-query-frontend.monitoring.svc.cluster.local:3100
+                jsonData:
+                  httpMethod: GET
+                  serviceMap:
+                    datasourceUid: 'Prometheus'
+
+        # Security context configurations
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 472
+          fsGroup: 472
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+        
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+

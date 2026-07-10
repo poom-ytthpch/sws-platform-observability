@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-application-rules
+  namespace: monitoring
+  labels:
+    role: alert-rules
+    release: prometheus-stack
+spec:
+  groups:
+    - name: application-telemetry
+      rules:
+        # Alert when HTTP 5xx error rate exceeds 5%
+        - alert: HttpHighErrorRate
+          expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5
+          for: 5m
+          labels:
+            severity: high
+          annotations:
+            summary: "HTTP High Error Rate on Service {{ $labels.service }}"
+            description: "The 5xx HTTP response error rate on service {{ $labels.service }} has exceeded 5% over the last 5 minutes."
+
+        # Alert when 99th percentile HTTP latency exceeds 500ms
+        - alert: HttpHighLatency
+          expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 0.5
+          for: 5m
+          labels:
+            severity: medium
+          annotations:
+            summary: "HTTP High p99 Latency on Service {{ $labels.service }}"
+            description: "The 99th percentile response latency on service {{ $labels.service }} is {{ $value }} seconds, exceeding the 500ms limit."
