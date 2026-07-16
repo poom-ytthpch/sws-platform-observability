@@ -1,9 +1,89 @@
-# dev env config overrides
-environment: development
-prometheus:
-  storageSize: 5Gi
-loki:
-  storageSize: 10Gi
-tempo:
-  storageSize: 5Gi
+# =============================================================================
+# DEV (tiny) — Observability overrides
+# -----------------------------------------------------------------------------
+# Flat keys matching helmfile dig patterns:
+# {component}.{memReq|cpuReq|memLim|cpuLim|replicas|storageSize|storageClass}
+# =============================================================================
 
+environmentName: development
+
+# ── Prometheus ───────────────────────────────────────────────────────────────
+prometheus:
+  storageClass: "local-path"
+  storageSize: 5Gi
+  replicaCount: 1
+  cpuReq: "50m"
+  memReq: "128Mi"
+  cpuLim: "300m"
+  memLim: "384Mi"
+  retention: 6h
+  retentionSize: 1GB
+  podAntiAffinity: "soft"
+
+# ── Alertmanager ─────────────────────────────────────────────────────────────
+alertmanager:
+  replicaCount: 1
+  storageSize: 1Gi
+  cpuReq: "10m"
+  memReq: "32Mi"
+  cpuLim: "100m"
+  memLim: "128Mi"
+
+# ── Grafana ──────────────────────────────────────────────────────────────────
+grafana:
+  storageClass: "local-path"
+  storageSize: 10Gi
+  cpuReq: "25m"
+  memReq: "64Mi"
+  cpuLim: "200m"
+  memLim: "256Mi"
+
+# ── Loki (SSD: single write + single read) ───────────────────────────────────
+backend:
+  replicas: 1
+  cpuReq: "10m"
+  memReq: "32Mi"
+  cpuLim: "200m"
+  memLim: "128Mi"
+
+write:
+  replicas: 1
+  cpuReq: "25m"
+  memReq: "64Mi"
+  cpuLim: "200m"
+  memLim: "256Mi"
+
+read:
+  replicas: 1
+  cpuReq: "25m"
+  memReq: "64Mi"
+  cpuLim: "200m"
+  memLim: "256Mi"
+
+# ── Tempo (single ingester + distributor) ────────────────────────────────────
+ingester:
+  replicas: 1
+  cpuReq: "25m"
+  memReq: "64Mi"
+  cpuLim: "200m"
+  memLim: "256Mi"
+
+distributor:
+  replicas: 1
+  cpuReq: "10m"
+  memReq: "32Mi"
+  cpuLim: "100m"
+  memLim: "128Mi"
+
+compactor:
+  cpuReq: "5m"
+  memReq: "16Mi"
+  cpuLim: "50m"
+  memLim: "64Mi"
+
+# ── OTel Collector ───────────────────────────────────────────────────────────
+otelCollector:
+  cpuReq: "10m"
+  memReq: "32Mi"
+  cpuLim: "100m"
+  memLim: "128Mi"

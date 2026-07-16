@@ -1,0 +1,9 @@
+# prod env config overrides
+environment: production
+prometheus:
+  storageSize: 100Gi
+loki:
+  storageSize: 300Gi
+tempo:
+  storageSize: 150Gi
+

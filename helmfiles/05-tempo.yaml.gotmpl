@@ -9,3 +9,29 @@ releases:
     version: 1.6.2
     values:
       - ../environments/default/tempo.yaml
+      - ingester:
+          replicas: {{ dig "ingester" "replicas" 2 .Values }}
+          resources:
+            limits:
+              cpu: {{ dig "ingester" "cpuLim" "1000m" .Values }}
+              memory: {{ dig "ingester" "memLim" "2048Mi" .Values }}
+            requests:
+              cpu: {{ dig "ingester" "cpuReq" "200m" .Values }}
+              memory: {{ dig "ingester" "memReq" "512Mi" .Values }}
+        distributor:
+          replicas: {{ dig "distributor" "replicas" 2 .Values }}
+          resources:
+            limits:
+              cpu: {{ dig "distributor" "cpuLim" "500m" .Values }}
+              memory: {{ dig "distributor" "memLim" "512Mi" .Values }}
+            requests:
+              cpu: {{ dig "distributor" "cpuReq" "100m" .Values }}
+              memory: {{ dig "distributor" "memReq" "128Mi" .Values }}
+        compactor:
+          resources:
+            limits:
+              cpu: {{ dig "compactor" "cpuLim" "500m" .Values }}
+              memory: {{ dig "compactor" "memLim" "1024Mi" .Values }}
+            requests:
+              cpu: {{ dig "compactor" "cpuReq" "100m" .Values }}
+              memory: {{ dig "compactor" "memReq" "256Mi" .Values }}

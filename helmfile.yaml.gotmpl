@@ -26,7 +26,18 @@ environments:
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
       - environments/production/values.yaml
-
+  testing:
+    values:
+      - environments/default/common-values.yaml
+      - environments/testing/values.yaml
+  uat:
+    values:
+      - environments/default/common-values.yaml
+      - environments/uat/values.yaml
+  dr:
+    values:
+      - environments/default/common-values.yaml
+      - environments/dr/values.yaml
 helmfiles:
   - path: helmfiles/00-crds.yaml.gotmpl
     values:

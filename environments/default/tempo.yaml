@@ -12,8 +12,8 @@ tempo:
         bucket: tempo-traces
         endpoint: minio.platform-system.svc.cluster.local:9000
         insecure: true
-        access_key_id: admin
-        secret_access_key: secret123
+        access_key: admin
+        secret_key: secret123
 
 # Ingester replicas
 ingester:

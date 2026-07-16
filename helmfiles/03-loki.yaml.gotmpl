@@ -9,4 +9,31 @@ releases:
     version: 5.8.0
     values:
       - ../environments/default/loki.yaml
+      - backend:
+          replicas: {{ dig "backend" "replicas" 3 .Values }}
+          resources:
+            limits:
+              cpu: {{ dig "backend" "cpuLim" "1000m" .Values }}
+              memory: {{ dig "backend" "memLim" "2048Mi" .Values }}
+            requests:
+              cpu: {{ dig "backend" "cpuReq" "200m" .Values }}
+              memory: {{ dig "backend" "memReq" "512Mi" .Values }}
+        write:
+          replicas: {{ dig "write" "replicas" 2 .Values }}
+          resources:
+            limits:
+              cpu: {{ dig "write" "cpuLim" "1000m" .Values }}
+              memory: {{ dig "write" "memLim" "2048Mi" .Values }}
+            requests:
+              cpu: {{ dig "write" "cpuReq" "200m" .Values }}
+              memory: {{ dig "write" "memReq" "512Mi" .Values }}
+        read:
+          replicas: {{ dig "read" "replicas" 2 .Values }}
+          resources:
+            limits:
+              cpu: {{ dig "read" "cpuLim" "1000m" .Values }}
+              memory: {{ dig "read" "memLim" "2048Mi" .Values }}
+            requests:
+              cpu: {{ dig "read" "cpuReq" "200m" .Values }}
+              memory: {{ dig "read" "memReq" "512Mi" .Values }}
 

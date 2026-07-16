@@ -69,11 +69,11 @@ ports:
 # Resources allocation
 resources:
   limits:
-    cpu: 1000m
-    memory: 2048Mi
-  requests:
-    cpu: 100m
+    cpu: 200m
     memory: 256Mi
+  requests:
+    cpu: 25m
+    memory: 64Mi
 
 # Security contexts
 podSecurityContext:

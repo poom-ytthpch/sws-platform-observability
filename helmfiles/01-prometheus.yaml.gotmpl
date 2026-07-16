@@ -11,6 +11,14 @@ releases:
       - ../environments/default/prometheus-stack.yaml
       - prometheus:
           prometheusSpec:
+            replicas: {{ dig "prometheus" "replicaCount" 2 .Values }}
+            resources:
+              requests:
+                cpu: {{ dig "prometheus" "cpuReq" "100m" .Values }}
+                memory: {{ dig "prometheus" "memReq" "512Mi" .Values }}
+              limits:
+                cpu: {{ dig "prometheus" "cpuLim" "500m" .Values }}
+                memory: {{ dig "prometheus" "memLim" "512Mi" .Values }}
             storageSpec:
               volumeClaimTemplate:
                 spec:
@@ -20,8 +28,19 @@ releases:
                   storageClassName: {{ dig "prometheus" "storageClass" "longhorn-replicated" .Values }}
         alertmanager:
           alertmanagerSpec:
+            replicas: {{ dig "alertmanager" "replicaCount" 2 .Values }}
             storage:
               volumeClaimTemplate:
                 spec:
                   storageClassName: {{ dig "prometheus" "storageClass" "longhorn-replicated" .Values }}
+                  resources:
+                    requests:
+                      storage: {{ dig "alertmanager" "storageSize" "2Gi" .Values }}
+            resources:
+              limits:
+                cpu: {{ dig "alertmanager" "cpuLim" "500m" .Values }}
+                memory: {{ dig "alertmanager" "memLim" "1024Mi" .Values }}
+              requests:
+                cpu: {{ dig "alertmanager" "cpuReq" "50m" .Values }}
+                memory: {{ dig "alertmanager" "memReq" "128Mi" .Values }}
 

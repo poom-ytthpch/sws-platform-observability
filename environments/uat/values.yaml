@@ -1,0 +1,9 @@
+# staging env config overrides
+environment: staging
+prometheus:
+  storageSize: 20Gi
+loki:
+  storageSize: 50Gi
+tempo:
+  storageSize: 20Gi
+

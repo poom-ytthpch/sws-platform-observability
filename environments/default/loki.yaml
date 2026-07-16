@@ -9,12 +9,32 @@ loki:
     shared_store: s3
     retention_enabled: true
     retention_delete_delay: 2h
-    retention_delete_worker_count: 150
+    retention_delete_worker_count: 10
   
   limits_config:
     retention_period: 720h # Retain logs for 30 days
     reject_old_samples: true
     reject_old_samples_max_age: 168h
+  
+  ingester:
+    max_chunk_age: 30m
+    chunk_retain_period: 1m
+    chunk_idle_period: 15m
+    chunk_target_size: 1048576
+  
+  querier:
+    query_ingesters_within: 1h
+  
+  table_manager:
+    retention_deletes_enabled: true
+    retention_period: 720h
+  
+  storage_config:
+    boltdb_shipper:
+      active_index_directory: /var/loki/index
+      cache_location: /var/loki/cache
+      cache_ttl: 1h
+      shared_store: s3
   
   # MinIO S3 storage backend configuration
   storage:
@@ -26,8 +46,17 @@ loki:
     s3:
       s3: http://minio.platform-system.svc.cluster.local:9000
       s3forcepathstyle: true
-      access_key_id: admin
-      secret_access_key: secret123
+      insecure: true
+
+  # Credentials must be passed as env vars for the Loki chart 5.x to pick them up
+  # (config-level access_key_id/secret_access_key are not rendered by this chart version)
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      value: admin
+    - name: AWS_SECRET_ACCESS_KEY
+      value: secret123
+    - name: AWS_EC2_METADATA_DISABLED
+      value: "true"
 
 write:
   replicas: 2

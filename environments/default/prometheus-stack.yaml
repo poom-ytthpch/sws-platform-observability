@@ -35,6 +35,11 @@ prometheus:
     # Pod Scheduling Hardening
     podAntiAffinity: "hard"
     
+    # TSDB tuning for memory efficiency
+    tsdb:
+      outOfOrderTimeWindow: 0s
+      walCompression: true
+    
     resources:
       limits:
         cpu: 4000m
@@ -87,11 +92,11 @@ alertmanager:
       - name: 'slack-notifications'
         slack_configs:
           - channel: '#platform-alerts'
-            api_url: 'PLACEHOLDER_SLACK_WEBHOOK_URL'
+            api_url: 'https://hooks.slack.com/services/PLACEHOLDER'
             send_resolved: true
       - name: 'pagerduty-urgent'
         pagerduty_configs:
-          - service_key: 'pagerduty-integration-key-placeholder'
+          - service_key: '00000000000000000000000000000000'
             send_resolved: true
 
 # Enable standard node exporters and collectors

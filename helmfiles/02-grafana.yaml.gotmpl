@@ -10,12 +10,24 @@ releases:
     values:
       - persistence:
           enabled: true
-          storageClassName: longhorn-replicated
-          size: 10Gi
+          storageClassName: {{ dig "grafana" "storageClass" "local-path" .Values }}
+          size: {{ dig "grafana" "storageSize" "10Gi" .Values }}
+        resources:
+          limits:
+            cpu: {{ dig "grafana" "cpuLim" "1000m" .Values }}
+            memory: {{ dig "grafana" "memLim" "1024Mi" .Values }}
+          requests:
+            cpu: {{ dig "grafana" "cpuReq" "200m" .Values }}
+            memory: {{ dig "grafana" "memReq" "256Mi" .Values }}
         adminPassword: "secret123"
         ingress:
           enabled: true
           ingressClassName: nginx
+          {{- if eq .Environment.Name "development" }}
+          annotations: {}
+          hosts:
+            - grafana.sws.internal
+          {{- else }}
           annotations:
             cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
             nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -25,6 +37,7 @@ releases:
             - secretName: grafana-console-tls
               hosts:
                 - grafana.sws.internal
+          {{- end }}
         
         # Provision datasources automatically
         datasources:
@@ -60,12 +73,4 @@ releases:
             drop:
               - ALL
           readOnlyRootFilesystem: true
-        
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 1024Mi
-          requests:
-            cpu: 200m
-            memory: 256Mi
 
