@@ -34,7 +34,7 @@ releases:
 
         # Deploy ServiceMonitor to scrape probes
         serviceMonitor:
-          enabled: {{ exec "sh" (list "-c" "kubectl get crd servicemonitors.monitoring.coreos.com &>/dev/null && echo true || echo false") | trim }}
+          enabled: true
           defaults:
             labels:
               release: prometheus-stack

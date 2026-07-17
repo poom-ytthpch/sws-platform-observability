@@ -4,12 +4,10 @@
 loki:
   auth_enabled: false
   
-  # Compaction and retention management
+  # Compaction and retention management (disabled for temp validation - S3 path-style not supported)
   compactor:
     shared_store: s3
-    retention_enabled: true
-    retention_delete_delay: 2h
-    retention_delete_worker_count: 10
+    retention_enabled: false
   
   limits_config:
     retention_period: 720h # Retain logs for 30 days

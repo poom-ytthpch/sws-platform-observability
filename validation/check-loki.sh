@@ -12,7 +12,7 @@ log_info "Auditing Loki write nodes ready status..."
 if ! kubectl wait -n monitoring \
                   --for=condition=ready pod \
                   -l app.kubernetes.io/component=write \
-                  --timeout=30s &>/dev/null; then
+                  --timeout=30s >/dev/null 2>&1; then
     log_err "Loki write pods are not ready!"
     exit 1
 fi
@@ -22,7 +22,7 @@ log_info "Auditing Loki read nodes ready status..."
 if ! kubectl wait -n monitoring \
                   --for=condition=ready pod \
                   -l app.kubernetes.io/component=read \
-                  --timeout=30s &>/dev/null; then
+                  --timeout=30s >/dev/null 2>&1; then
     log_err "Loki read pods are not ready!"
     exit 1
 fi

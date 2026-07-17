@@ -1,9 +1,24 @@
-# prod env config overrides
+# prod env config overrides (reduced for single-node validation)
 environment: production
 prometheus:
-  storageSize: 100Gi
-loki:
-  storageSize: 300Gi
+  storageSize: 10Gi
+  storageClass: longhorn
+  replicaCount: 1
+  memLim: 2048Mi
+  cpuLim: 1000m
+alertmanager:
+  replicaCount: 1
+backend:
+  replicas: 1
+write:
+  replicas: 1
+read:
+  replicas: 1
 tempo:
-  storageSize: 150Gi
+  storageSize: 10Gi
+  storageClass: longhorn
+  ingester:
+    replicas: 1
+  distributor:
+    replicas: 1
 

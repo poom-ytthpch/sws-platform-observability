@@ -2,7 +2,7 @@ releases:
   - name: custom-alert-rules
     namespace: monitoring
     chart: ../charts/raw
-    installed: {{ exec "sh" (list "-c" "kubectl get crd prometheusrules.monitoring.coreos.com &>/dev/null && echo true || echo false") | trim }}
+    installed: true
     values:
 
       - globalLabels:

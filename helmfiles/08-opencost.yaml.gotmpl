@@ -18,7 +18,7 @@ releases:
         
         # Scrape metrics configurations
         serviceMonitor:
-          enabled: {{ exec "sh" (list "-c" "kubectl get crd servicemonitors.monitoring.coreos.com &>/dev/null && echo true || echo false") | trim }}
+          enabled: true
           additionalLabels:
             release: prometheus-stack
         

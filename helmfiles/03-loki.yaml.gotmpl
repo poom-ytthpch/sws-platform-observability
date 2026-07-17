@@ -11,6 +11,13 @@ releases:
       - ../environments/default/loki.yaml
       - backend:
           replicas: {{ dig "backend" "replicas" 3 .Values }}
+          extraEnv:
+            - name: AWS_ACCESS_KEY_ID
+              value: admin
+            - name: AWS_SECRET_ACCESS_KEY
+              value: secret123
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
           resources:
             limits:
               cpu: {{ dig "backend" "cpuLim" "1000m" .Values }}
@@ -20,6 +27,13 @@ releases:
               memory: {{ dig "backend" "memReq" "512Mi" .Values }}
         write:
           replicas: {{ dig "write" "replicas" 2 .Values }}
+          extraEnv:
+            - name: AWS_ACCESS_KEY_ID
+              value: admin
+            - name: AWS_SECRET_ACCESS_KEY
+              value: secret123
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
           resources:
             limits:
               cpu: {{ dig "write" "cpuLim" "1000m" .Values }}
@@ -29,6 +43,13 @@ releases:
               memory: {{ dig "write" "memReq" "512Mi" .Values }}
         read:
           replicas: {{ dig "read" "replicas" 2 .Values }}
+          extraEnv:
+            - name: AWS_ACCESS_KEY_ID
+              value: admin
+            - name: AWS_SECRET_ACCESS_KEY
+              value: secret123
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
           resources:
             limits:
               cpu: {{ dig "read" "cpuLim" "1000m" .Values }}

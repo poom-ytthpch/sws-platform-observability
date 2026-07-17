@@ -10,7 +10,7 @@ releases:
     values:
       - persistence:
           enabled: true
-          storageClassName: {{ dig "grafana" "storageClass" "local-path" .Values }}
+          storageClassName: {{ dig "grafana" "storageClass" "longhorn" .Values }}
           size: {{ dig "grafana" "storageSize" "10Gi" .Values }}
         resources:
           limits:
