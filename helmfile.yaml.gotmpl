@@ -11,6 +11,8 @@ environments:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/development/values.generated.yaml
+      - ../environments/development/values.generated.yaml
       - environments/development/values.yaml
   staging:
     values:
@@ -18,6 +20,8 @@ environments:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/staging/values.generated.yaml
+      - ../environments/staging/values.generated.yaml
       - environments/staging/values.yaml
   production:
     values:
@@ -25,18 +29,26 @@ environments:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/production/values.generated.yaml
+      - ../environments/production/values.generated.yaml
       - environments/production/values.yaml
   testing:
     values:
       - environments/default/common-values.yaml
+      - ../environments/testing/values.generated.yaml
+      - ../environments/testing/values.generated.yaml
       - environments/testing/values.yaml
   uat:
     values:
       - environments/default/common-values.yaml
+      - ../environments/uat/values.generated.yaml
+      - ../environments/uat/values.generated.yaml
       - environments/uat/values.yaml
   dr:
     values:
       - environments/default/common-values.yaml
+      - ../environments/dr/values.generated.yaml
+      - ../environments/dr/values.generated.yaml
       - environments/dr/values.yaml
 helmfiles:
   - path: helmfiles/00-crds.yaml.gotmpl
@@ -45,6 +57,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/01-prometheus.yaml.gotmpl
     values:
@@ -52,6 +65,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/02-grafana.yaml.gotmpl
     values:
@@ -59,6 +73,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/03-loki.yaml.gotmpl
     values:
@@ -66,6 +81,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/04-promtail.yaml.gotmpl
     values:
@@ -73,6 +89,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/05-tempo.yaml.gotmpl
     values:
@@ -80,6 +97,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/06-opentelemetry.yaml.gotmpl
     values:
@@ -87,6 +105,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/07-blackbox.yaml.gotmpl
     values:
@@ -94,6 +113,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/08-opencost.yaml.gotmpl
     values:
@@ -101,6 +121,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/09-dashboards.yaml.gotmpl
     values:
@@ -108,6 +129,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/10-alerts.yaml.gotmpl
     values:
@@ -115,6 +137,7 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
   - path: helmfiles/11-validation.yaml.gotmpl
     values:
@@ -122,4 +145,5 @@ helmfiles:
       - environments/default/loki.yaml
       - environments/default/tempo.yaml
       - environments/default/otel-collector.yaml
+      - ../environments/{{ .Environment.Name }}/values.generated.yaml
       - environments/{{ .Environment.Name }}/values.yaml
