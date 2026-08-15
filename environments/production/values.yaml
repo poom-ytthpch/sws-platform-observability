@@ -1,24 +1,32 @@
-# prod env config overrides (reduced for single-node validation)
+# prod env config overrides — HomeLab (single-node, minimal resources)
 environment: production
 prometheus:
+  replicaCount: 1
+  storageSize: 5Gi
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 1Gi
+loki:
+  replicaCount: 1
   storageSize: 10Gi
-  storageClass: longhorn
-  replicaCount: 1
-  memLim: 2048Mi
-  cpuLim: 1000m
-alertmanager:
-  replicaCount: 1
-backend:
-  replicas: 1
-write:
-  replicas: 1
-read:
-  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
 tempo:
-  storageSize: 10Gi
-  storageClass: longhorn
-  ingester:
-    replicas: 1
-  distributor:
-    replicas: 1
-
+  replicaCount: 1
+  storageSize: 5Gi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi

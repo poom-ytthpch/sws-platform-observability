@@ -1,40 +1,7 @@
-# Production-Ready Grafana Loki Configuration (Simple Scalable Architecture)
-
-# Deploy read and write components for horizontal scaling
 loki:
   auth_enabled: false
-  
-  # Compaction and retention management (disabled for temp validation - S3 path-style not supported)
-  compactor:
-    shared_store: s3
-    retention_enabled: false
-  
-  limits_config:
-    retention_period: 720h # Retain logs for 30 days
-    reject_old_samples: true
-    reject_old_samples_max_age: 168h
-  
-  ingester:
-    max_chunk_age: 30m
-    chunk_retain_period: 1m
-    chunk_idle_period: 15m
-    chunk_target_size: 1048576
-  
-  querier:
-    query_ingesters_within: 1h
-  
-  table_manager:
-    retention_deletes_enabled: true
-    retention_period: 720h
-  
-  storage_config:
-    boltdb_shipper:
-      active_index_directory: /var/loki/index
-      cache_location: /var/loki/cache
-      cache_ttl: 1h
-      shared_store: s3
-  
-  # MinIO S3 storage backend configuration
+  commonConfig:
+    replication_factor: 1
   storage:
     bucketNames:
       chunks: loki-chunks
@@ -45,9 +12,6 @@ loki:
       s3: http://minio.platform-system.svc.cluster.local:9000
       s3forcepathstyle: true
       insecure: true
-
-  # Credentials must be passed as env vars for the Loki chart 5.x to pick them up
-  # (config-level access_key_id/secret_access_key are not rendered by this chart version)
   extraEnv:
     - name: AWS_ACCESS_KEY_ID
       value: admin
@@ -55,60 +19,46 @@ loki:
       value: secret123
     - name: AWS_EC2_METADATA_DISABLED
       value: "true"
-
-write:
-  replicas: 2
+  limits_config:
+    retention_period: 168h
+singleBinary:
+  replicas: 1
   resources:
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
     requests:
-      cpu: 200m
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
       memory: 512Mi
-
+  persistence:
+    size: 10Gi
 read:
-  replicas: 2
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
-    requests:
-      cpu: 200m
-      memory: 512Mi
-
-# Enable gateway (nginx ingress backend router)
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
 gateway:
   enabled: true
   resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
     requests:
-      cpu: 50m
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
       memory: 64Mi
-
-# Disable self-monitoring and Grafana Agent Operator.
-# We use Promtail for log collection — the Grafana Agent Operator is not required.
-# Keeping selfMonitoring enabled would fail on a clean cluster because it requires
-# monitoring.grafana.com/v1alpha1 CRDs (GrafanaAgent, LogsInstance, PodLogs).
 monitoring:
   selfMonitoring:
     enabled: false
     grafanaAgent:
       installOperator: false
   serviceMonitor:
-    metricsInstance:
-      enabled: false
-    # Keep ServiceMonitor enabled for Prometheus Operator scraping
-    enabled: true
+    enabled: false
   dashboards:
-    enabled: true
+    enabled: false
   rules:
-    enabled: true
+    enabled: false
   lokiCanary:
-    enabled: true
-
-# Disable Helm tests (require self-monitoring)
+    enabled: false
 test:
   enabled: false
-

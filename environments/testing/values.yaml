@@ -1,9 +1,0 @@
-# dev env config overrides
-environment: development
-prometheus:
-  storageSize: 5Gi
-loki:
-  storageSize: 10Gi
-tempo:
-  storageSize: 5Gi
-

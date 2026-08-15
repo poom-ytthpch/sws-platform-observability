@@ -26,17 +26,17 @@ releases:
           {{- if eq .Environment.Name "development" }}
           annotations: {}
           hosts:
-            - grafana.sws.internal
+            - {{ .Values.ingressHosts.grafana }}
           {{- else }}
           annotations:
-            cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+            cert-manager.io/cluster-issuer: {{ .Values.certManager.issuerName }}
             nginx.ingress.kubernetes.io/ssl-redirect: "true"
           hosts:
-            - grafana.sws.internal
+            - {{ .Values.ingressHosts.grafana }}
           tls:
-            - secretName: grafana-console-tls
+            - secretName: {{ .Values.ingressHosts.grafana | replace "." "-" }}-tls
               hosts:
-                - grafana.sws.internal
+                - {{ .Values.ingressHosts.grafana }}
           {{- end }}
         
         # Provision datasources automatically

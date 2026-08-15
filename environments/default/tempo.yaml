@@ -1,10 +1,5 @@
-# Production-Ready Grafana Tempo Configuration (Simple Scalable Architecture)
-
-# Deploy distributed components for trace ingestion and querying
 tempo:
-  retention: 168h # Retain traces for 7 days (168 hours)
-  
-  # MinIO S3 storage backend configuration
+  retention: 168h
   storage:
     trace:
       backend: s3
@@ -14,35 +9,47 @@ tempo:
         insecure: true
         access_key: admin
         secret_key: secret123
-
-# Ingester replicas
 ingester:
-  replicas: 2
+  replicas: 1
   resources:
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
     requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
       cpu: 200m
-      memory: 512Mi
-
-# Distributor replicas
+      memory: 256Mi
 distributor:
-  replicas: 2
+  replicas: 1
   resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
     requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
       cpu: 100m
       memory: 128Mi
-
-# Query frontend and compactor limits
 compactor:
   resources:
-    limits:
-      cpu: 500m
-      memory: 1024Mi
     requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
       cpu: 100m
-      memory: 256Mi
+      memory: 128Mi
+querier:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+queryFrontend:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+metricsGenerator:
+  enabled: false

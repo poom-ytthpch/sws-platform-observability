@@ -25,14 +25,14 @@ releases:
                   resources:
                     requests:
                       storage: {{ dig "prometheus" "storageSize" "5Gi" .Values }}
-                  storageClassName: {{ dig "prometheus" "storageClass" "longhorn-replicated" .Values }}
+                  storageClassName: {{ dig "prometheus" "storageClass" "local-path" .Values }}
         alertmanager:
           alertmanagerSpec:
             replicas: {{ dig "alertmanager" "replicaCount" 2 .Values }}
             storage:
               volumeClaimTemplate:
                 spec:
-                  storageClassName: {{ dig "prometheus" "storageClass" "longhorn-replicated" .Values }}
+                  storageClassName: {{ dig "prometheus" "storageClass" "local-path" .Values }}
                   resources:
                     requests:
                       storage: {{ dig "alertmanager" "storageSize" "2Gi" .Values }}
