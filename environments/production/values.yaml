@@ -10,6 +10,9 @@ prometheus:
     requests:
       cpu: 100m
       memory: 1Gi
+alertmanager:
+  replicaCount: 1
+  storageSize: 2Gi
 loki:
   replicaCount: 1
   storageSize: 10Gi
