@@ -1,0 +1,163 @@
+{
+  "uid": "sws-udp-device-logs",
+  "title": "SWS UDP Device Logs",
+  "tags": ["sws", "udp", "device", "logs", "loki"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "editable": true,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "deviceId",
+        "type": "textbox",
+        "label": "Device ID",
+        "query": ".*",
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        }
+      },
+      {
+        "name": "level",
+        "type": "custom",
+        "label": "Level",
+        "query": "INFO,WARN,ERROR,FATAL,DEBUG,VERBOSE",
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": []
+      },
+      {
+        "name": "search",
+        "type": "textbox",
+        "label": "Message contains",
+        "query": ".*",
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "UDP Logs / 5m",
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service=\"sws-server\", role=\"transport\"} |= \"📨\" |~ \"\\\\[$deviceId\\\\]\" |~ \"\\\\[$level\\\\]\" |~ \"$search\" [5m]))"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "options": {"reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Errors / 15m",
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service=\"sws-server\", role=\"transport\"} |= \"📨\" |~ \"\\\\[$deviceId\\\\]\" |~ \"\\\\[(ERROR|FATAL)\\\\]\" |~ \"$search\" [15m]))"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "options": {"reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Warnings / 15m",
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service=\"sws-server\", role=\"transport\"} |= \"📨\" |~ \"\\\\[$deviceId\\\\]\" |~ \"\\\\[WARN\\\\]\" |~ \"$search\" [15m]))"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "options": {"reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"}
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Selected Device",
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [],
+      "options": {"textMode": "name", "colorMode": "none", "graphMode": "none", "justifyMode": "center"},
+      "fieldConfig": {"defaults": {"displayName": "$deviceId"}, "overrides": []}
+    },
+    {
+      "id": 5,
+      "type": "logs",
+      "title": "Live UDP Device Logs",
+      "gridPos": {"x": 0, "y": 4, "w": 24, "h": 14},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service=\"sws-server\", role=\"transport\"} |= \"📨\" |~ \"\\\\[$deviceId\\\\]\" |~ \"\\\\[$level\\\\]\" |~ \"$search\"",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "UDP Log Rate",
+      "gridPos": {"x": 0, "y": 18, "w": 12, "h": 8},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service=\"sws-server\", role=\"transport\"} |= \"📨\" |~ \"\\\\[$deviceId\\\\]\" |~ \"\\\\[$level\\\\]\" |~ \"$search\" [1m]))",
+          "legendFormat": "logs/min"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}}
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "UDP Receiver Diagnostics",
+      "gridPos": {"x": 12, "y": 18, "w": 12, "h": 8},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service=\"sws-server\", role=\"transport\"} |~ \"UDP Log Server|UDP socket|\\\\[UDP\\\\] Received\"",
+          "queryType": "range"
+        }
+      ],
+      "options": {"showTime": true, "showLabels": false, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending"}
+    }
+  ]
+}

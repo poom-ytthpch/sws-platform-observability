@@ -1,63 +1,8 @@
-# Production-Ready Grafana Loki Configuration (Simple Scalable Architecture)
-
-# Deploy read and write components for horizontal scaling
-loki:
-  auth_enabled: false
-  
-  # Compaction and retention management (disabled for temp validation - S3 path-style not supported)
-  compactor:
-    shared_store: s3
-    retention_enabled: false
-  
-  limits_config:
-    retention_period: 720h # Retain logs for 30 days
-    reject_old_samples: true
-    reject_old_samples_max_age: 168h
-  
-  ingester:
-    max_chunk_age: 30m
-    chunk_retain_period: 1m
-    chunk_idle_period: 15m
-    chunk_target_size: 1048576
-  
-  querier:
-    query_ingesters_within: 1h
-  
-  table_manager:
-    retention_deletes_enabled: true
-    retention_period: 720h
-  
-  storage_config:
-    boltdb_shipper:
-      active_index_directory: /var/loki/index
-      cache_location: /var/loki/cache
-      cache_ttl: 1h
-      shared_store: s3
-  
-  # MinIO S3 storage backend configuration
-  storage:
-    bucketNames:
-      chunks: loki-chunks
-      ruler: loki-ruler
-      admin: loki-admin
-    type: s3
-    s3:
-      s3: http://minio.platform-system.svc.cluster.local:9000
-      s3forcepathstyle: true
-      insecure: true
-
-  # Credentials must be passed as env vars for the Loki chart 5.x to pick them up
-  # (config-level access_key_id/secret_access_key are not rendered by this chart version)
-  extraEnv:
-    - name: AWS_ACCESS_KEY_ID
-      value: admin
-    - name: AWS_SECRET_ACCESS_KEY
-      value: secret123
-    - name: AWS_EC2_METADATA_DISABLED
-      value: "true"
-
-write:
-  replicas: 2
+# Single-node match-infra Loki configuration.
+# Keep this aligned with the live Helm release: SingleBinary, no external
+# memcached caches, and a no-surge gateway rollout for required anti-affinity.
+backend:
+  replicas: 0
   resources:
     limits:
       cpu: 1000m
@@ -65,50 +10,94 @@ write:
     requests:
       cpu: 200m
       memory: 512Mi
-
-read:
-  replicas: 2
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
-    requests:
-      cpu: 200m
-      memory: 512Mi
-
-# Enable gateway (nginx ingress backend router)
+chunksCache:
+  enabled: false
+deploymentMode: SingleBinary
 gateway:
+  deploymentStrategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
   enabled: true
   resources:
     limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 50m
+      cpu: 100m
       memory: 64Mi
-
-# Disable self-monitoring and Grafana Agent Operator.
-# We use Promtail for log collection — the Grafana Agent Operator is not required.
-# Keeping selfMonitoring enabled would fail on a clean cluster because it requires
-# monitoring.grafana.com/v1alpha1 CRDs (GrafanaAgent, LogsInstance, PodLogs).
+    requests:
+      cpu: 25m
+      memory: 32Mi
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  compactor:
+    delete_request_store: filesystem
+    retention_delete_delay: 2h
+    retention_delete_worker_count: 50
+    retention_enabled: true
+    working_directory: /var/loki/compactor
+  image:
+    tag: 3.6.12
+  limits_config:
+    retention_period: 2160h
+  schemaConfig:
+    configs:
+    - from: "2024-01-01"
+      index:
+        period: 24h
+        prefix: loki_index_
+      object_store: filesystem
+      schema: v13
+      store: tsdb
+  storage:
+    filesystem:
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
+    type: filesystem
 monitoring:
+  dashboards:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  rules:
+    enabled: false
   selfMonitoring:
     enabled: false
     grafanaAgent:
       installOperator: false
   serviceMonitor:
-    metricsInstance:
-      enabled: false
-    # Keep ServiceMonitor enabled for Prometheus Operator scraping
-    enabled: true
-  dashboards:
-    enabled: true
-  rules:
-    enabled: true
-  lokiCanary:
-    enabled: true
-
-# Disable Helm tests (require self-monitoring)
+    enabled: false
+read:
+  replicas: 0
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+resultsCache:
+  enabled: false
+singleBinary:
+  persistence:
+    size: 10Gi
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
 test:
   enabled: false
-
+write:
+  replicas: 0
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
