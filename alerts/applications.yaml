@@ -29,3 +29,51 @@ spec:
           annotations:
             summary: "HTTP High p99 Latency on Service {{ $labels.service }}"
             description: "The 99th percentile response latency on service {{ $labels.service }} is {{ $value }} seconds, exceeding the 500ms limit."
+
+    # Sensor History ingestion health (P0 residual alerting). Metrics are
+    # exposed by sws-server-dashboard at /internal/sensor-history/metrics
+    # (aggregate gauges; dashboard branch release/sensor-history-p0p1-20261107,
+    # commit b1af697). Every expression references metrics that do not exist
+    # until that dashboard release ships — an empty vector stays silent, so
+    # these rules are inert until the exporter is live. No absent() coverage
+    # for a fully-silenced exporter yet, by design: adding it now would
+    # false-fire against PRD/legacy pods.
+    - name: sensor-history-ingestion
+      rules:
+        # Samples received recently but durable persistence lagging beyond
+        # the exporter's stale threshold — the exact Nov 4-7 failure shape
+        # (pods Ready, subscription silently dead, storage starved).
+        - alert: SensorHistoryIngestPersistLag
+          expr: sensor_history_ingest_persist_lag_devices > 0
+          for: 5m
+          labels:
+            severity: high
+          annotations:
+            summary: "Sensor history persistence lagging for {{ $value }} device(s)"
+            description: "sws-server-dashboard received samples but has not persisted them beyond the stale threshold for {{ $value }} device(s). Correlate with MQTT subscription status and Kafka/Influx errors; history data is at risk of an unrecoverable gap (QoS0)."
+
+        # History topic subscription lost (SUBACK not confirmed) while the
+        # broker session is otherwise alive.
+        - alert: SensorHistoryIngestSubscriptionDown
+          expr: max(sensor_history_ingest_subscription_subscribed) < 1
+          for: 10m
+          labels:
+            severity: high
+          annotations:
+            summary: "Sensor history MQTT subscription not confirmed"
+            description: "sws-server-dashboard has not held a SUBACK-confirmed subscription to the shared history topic for 10 minutes. Published sensor/save messages are being dropped (QoS0) — an ingestion gap is accumulating."
+
+        # Quiet-window warning: monitored devices have gone silent past the
+        # stale threshold while no exporter restart resets the counters.
+        # Known false positive: a legitimately powered-off device also
+        # counts; corroborate device presence (server telemetryReceivedAt)
+        # before paging.
+        - alert: SensorHistoryIngestSilent
+          expr: sensor_history_ingest_stale_devices > 0 unless changes(sensor_history_ingest_received_total[30m]) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Sensor history ingestion silent for {{ $value }} device(s)"
+            description: "No sensor/save samples within the stale threshold and no counter movement for 30m. Verify device connectivity and the shared-subscription state."
+
